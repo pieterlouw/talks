@@ -1,0 +1,286 @@
+Effective refactoring techniques with Go interfaces
+Gauteng Developer User Group meetup 
+15 Feb 2017
+Tags: go,golang,refactoring,design,interfaces 
+
+Pieter Louw
+@pieterlouw
+
+* Change happens
+
+- Every programmer knows change
+- Change can happen swiftly and without hassle
+- Change can be costly and cumbersome
+- Latter > Former
+
+: You don't need to have been a programmer for long to have been confronted with change in a system.
+: Sometimes implementing change is swift and without hassle, other times it's more cumbersome and costly.
+: I would say most times it's the latter.
+
+* Change happens
+
+- Inherit responsibility to maintain
+- Change is a continual process
+- Cascading changes need to be minimal
+
+: As soon as a system is being used by someone we automatically inherit the responsibility of maintaining said system.
+: For most systems change is a continual process and something that we will eventually need to confront.
+: Any change subjects us to the risk that the remainder of the system no longer works as intended.
+: We want these cascading changes to be as small as possible, or even non-existing.
+
+Effective change:
+
+"System design that's adaptive to change over being predictive of what _might_ change." 
+ 
+* Go interfaces
+- How can Go implement good design with C-like syntax and no *class* keyword?
+- *interface* to the rescue
+
+
+
+"Interfaces in Go provide a way to specify the behavior of a value: 
+    If something can do _this_, then it can be used _here_ " 
+.link https://golang.org/doc/effective_go.html - Effective Go
+
+: When I started with the Go language I had the perception that this language is mainly used to write high performance programs
+: or system tools. As I dove deeper into the language I was amazed at how good this C-like language with no `class` keyword 
+: can be used to write software with good design. 
+: As I was learning the standard library and scanned through other people's Go code (Open Source FTW!), I kept on bumping into
+: the `interface` keyword and how it can be used to make your design more effective.
+
+
+* Example 
+
+SMS notification system consists of a basic data type called *Notification*
+and *SMSEngine* type with methods to send notifications
+
+    // Notification defines the concrete data type that
+    // will be used in the notification system.
+    type Notification struct {        
+        Subject   string
+        Message   string
+    }
+
+    
+* Example (continued)
+    // SMSEngine is used to send the notification as an SMS.
+    type SMSEngine struct {
+        Recipients []string
+        // Fields specific to sending a SMS.
+    }
+
+    // NewSMSEngine creates a new SMS for use and assign recipients
+    func NewSMSEngine(recipients []string) *SMSEngine {
+        return &SMSEngine{
+            Recipients: recipients,
+        }
+    }
+
+    // Send knows how to send a SMS notification to all recipients
+    func (sms *SMSEngine) Send(n Notification) {
+        for _, r := range sms.Recipients {
+            fmt.Printf("SMS %s Sent To %s\n", n.Subject, r)
+        }
+    }
+
+* Example (continued)
+
+    // Send delivers notifications through the SMS engine.
+    func Send(sms *SMSEngine, ns []Notification) {
+        for _, n := range ns {
+            sms.Send(n)
+        }
+    }
+
+* Example (continued)
+
+    func main() {
+        //define some notifications
+        ns := []Notification{
+            {"Hello", "Testing"},
+            {"Bye", "Testing"},
+        }
+
+        //setup sms engine and recipients
+        smsEngine := NewSMS([]string{
+            "0821119999",
+            "0718886543",
+        })
+
+        //send sms notifications
+        Send(smsEngine, ns)
+    }
+
+* Example (continued)
+
+New email engine:
+
+    // EmailEngine is used to send the notification as an Email.
+    type EmailEngine struct {
+        Recipients []string
+        // Fields specific to sending a Email.
+    }
+
+    // NewEmailEngine creates a new Email for use.
+    func NewEmailEngine(recipients []string) *EmailEngine {
+        return &EmailEngine{
+            Recipients: recipients,
+        }
+    }
+
+    // Send knows how to send an Email notification to all recipients
+    func (e *EmailEngine) Send(n Notification) {
+        for _, r := range e.Recipients {
+            fmt.Printf("SMS %s Sent To %s\n", n.Subject, r)
+        }
+    }
+
+* Example (continued)
+
+But the *Send* function only accepts the concrete *SMSEngine* type..
+
+    // Send delivers notifications through the SMS engine.
+    func Send(sms *SMSEngine, notifications []Notification) {
+        for _, n := range notifications {
+            sms.Send(n)
+        }
+    }
+
+Do we duplicate the function?
+
+    // SendEmail delivers notifications through the Email engine.
+    func SendEmail(sms *EmailEngine, ns []Notification) {
+        //
+    }
+    
+Or do we refactor and decouple rather?
+
+    // Notifier is a contract for delivering notifications.
+    type Notifier interface {
+        Send(n Notification)
+    }
+
+* Example (continued)
+
+    // Notifier is a contract for delivering notifications.
+    type Notifier interface {
+        Send(n Notification)
+    }
+
+Both delivery engines share the same _behavior_ : Sending of a notification.
+
+So instead of creating a new function, we change the existing function to accept the interface type rather than a concrete type:
+
+
+    // Send delivers notifications through any type that can send a notification
+    func Send(notifier Notifier, notifications []Notification) {
+        for _, n := range notifications {
+            notifier.Send(n)
+        }
+    } 
+
+"If something can do _this_, then it can be used _here_ "
+
+* Example (continued)
+
+    func main() {
+        //define some notifications
+        //...
+
+        //setup sms engine and recipients
+        smsEngine := NewSMSEngine([]string{
+            "0718886543",
+        })
+
+        //setup email engine and recipients
+        eml := NewEmailEngine([]string{
+            "sysadmin@company.com",
+        })
+
+        //send sms notifications
+        Send(smsEngine, notifications)
+
+        //send email notifications
+        Send(eml, notifications)
+    } 
+
+There's a lot going on in the main function...
+
+* Example (continued)
+
+   // NotificationManager manages a set of notifications to be delivered.
+    type NotificationManager struct {
+        notifications []Notification
+    }
+
+    // NewNotificationManager creates a new manager for use.
+    func NewNotificationManager() *NotificationManager {
+        return &NotificationManager{}
+    }
+
+    // Add appends a notification to be sent on the internal list.
+    func (nm *NotificationManager) Add(n Notification) {
+        nm.notifications = append(nm.notifications, n)
+    }
+
+    // Send delivers messages through the specified delivery options provided.
+    func (nm *NotificationManager) Send(notifiers ...Notifier) {
+        for _, notifier := range notifiers {
+            for _, notification := range nm.notifications {
+                notifier.Send(notification)
+            }
+        }
+        nm.notifications = nil //clear notifications
+    }
+
+* Example (continued)
+
+    func main() {
+        nm := NewNotificationManager()
+
+        nm.Add(Notification{"Help!", "Someone deleted the master table"})
+        nm.Add(Notification{"Haha", "Just joking.."})
+
+        nm.Send(
+            NewSMSEngine([]string{
+                "0718886543",
+            }),
+            NewEmailEngine([]string{
+                "sysadmin@company.com",
+            }),
+        )
+    }
+
+* Outcomes
+
+- No change in existing types.
+- Look mom, no *implements*
+- Mock values can be created for testing
+- Cascading changes have been minimized
+
+"Ideal systems incorporate new features by extending the system, not by changing
+existing code." - Clean Code, Uncle Bob Martin
+
+* Other scenarios
+
+- Seperate database access patterns through an interface
+- Work against an interface instead of concrete 3rd party library
+- Go Standard library
+
+* Conclusions
+
+- Interfaces in Go are critical to designing software that can adapt to change. 
+- The right use of interfaces can allow software to grow, reshape and expand its initial purpose over time. 
+- The example we explored shows how interfaces are one of the tools for creating these flexible and decoupled designs. 
+- Change don't need to be costly,so let's refactor often and design our systems to be more adaptive and to handle change more effectively. 
+
+* Resources
+
+.link https://golang.org/doc/effective_go.html Effective Go, Go team
+.link https://www.goinggo.net/2014/05/methods-interfaces-and-embedded-types.html Methods, Interfaces and Embedded Types in Go, Bill Kennedy
+.link https://www.goinggo.net/2016/10/reducing-type-hierarchies.html Reducing Type Hierarchies, Bill Kennedy
+.link https://www.goinggo.net/2016/10/avoid-interface-pollution.html Avoid interface pollution, Bill Kennedy
+.link https://www.goinggo.net/2015/09/composition-with-go.html Composition with Go, Bill Kennedy
+.link https://www.goinggo.net/2016/11/application-focused-api-design.html Application Focused API Design, Bill Kennedy 
+.link https://dave.cheney.net/2016/08/20/solid-go-design SOLID Go Design, Dave Cheney
+.link https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882 Clean Code, Robert Martin
