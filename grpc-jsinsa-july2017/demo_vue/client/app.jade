@@ -1,0 +1,12 @@
+div.container
+    h1 Car Service Booking - gRPC-Web Vue.js Demo 
+    .card
+        .card-block
+                .form-group
+                    input.form-control("v-model"="customerName", placeholder="Customer Name")
+                .form-group
+                    input.form-control("v-model"="regNo", placeholder="Registration Number")
+                .form-group
+                    input.form-control("v-model"="odoMeter", placeholder="Odo Meter")
+
+                button("@click"="registerBooking()").btn.btn-default Make Booking

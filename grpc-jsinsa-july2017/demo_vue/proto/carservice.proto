@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package proto;
+
+service CarServiceDepartment {
+  rpc MakeBooking(Booking) returns (Empty) {}
+  rpc Watch (Empty) returns (stream Booking) {}
+}
+
+message Booking {
+  string reg = 1;
+  int32 odo = 2;
+  string name = 3;
+}
+
+message Empty {}

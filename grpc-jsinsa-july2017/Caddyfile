@@ -1,0 +1,14 @@
+
+localhost:8443 {
+    tls ./misc/localhost.crt ./misc/localhost.key
+    log
+    grpc localhost:9090 {
+        backend_is_insecure 
+        backend_tls_noverify
+    }
+}
+
+
+localhost:7777 {
+    root demo_vue
+}
