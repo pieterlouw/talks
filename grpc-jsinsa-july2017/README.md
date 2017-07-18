@@ -19,7 +19,7 @@ The [Caddy web server](https://caddyserver.com) version is 0.10.4 and [downloade
     - [Official gRPC](https://grpc.io/)
     - [Official gRPC - Node Quickstrt](https://grpc.io/docs/quickstart/node.html)
     - [Official gRPC - Node Basics](https://grpc.io/docs/tutorials/basic/node.html)
-    - [Building a gRPC service with C# - Codelab tutorial](https://codelabs.developers.google.com/codelabs/cloud-grpc/index.html)
+    - [Building a gRPC service with Node.js - Codelab tutorial](https://codelabs.developers.google.com/codelabs/cloud-grpc/index.html)
     - [gRPC-Web: Moving past REST+JSON towards type-safe Web APIs](https://improbable.io/games/blog/grpc-web-moving-past-restjson-towards-type-safe-web-apis)
 
 - ## Other:
