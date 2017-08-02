@@ -1,0 +1,389 @@
+Gopherview 
+GDG Johannesburg Meetup
+2 Aug 2017
+Tags: go,golang,intro,overview,cowbell
+
+Pieter Louw
+Software Developer
+@pieterlouw
+
+* 
+
+.image images/google.jpg 186 512
+
+.caption _Artwork_ : [[https://twitter.com/ashleymcnamara][Ashley McNamara]]
+
+: Compared:
+: Middle between dynamic and statically compiled
+: Attracts Java/C# developers - simpler/smaller
+: Attracts PHP/Ruby/Node - multi-core/static types/web development
+
+
+* What is Go?
+
+- Open source language developed at Google (Pike, Thompson, Griesemer)
+- Compiled (Cross-platform/Native code == no JVM)
+- Statically type-checked, dynamically type-safe 
+- Garbage Collected <-- Humans suck at memory management
+- General purpose
+
+* Features
+
+- Type System
+    Scalar i.e int64, bool, float64, string
+    Arrays i.e [5]string
+    Slices i.e []int
+    Maps i.e map[int]string
+- Functions (First class citizen, multiple return values, variadic, closures)
+- Structs with methods (No classes)
+- Type embedding only (Composition over inheritance)
+- Interfaces (Satisfied implicitly)
+- Concurrency (goroutines + channels)
+- Pass-by-value
+- Pointers
+
+.caption Go official website: [[http://golang.org][golang.org]]
+
+* Wait, pointers??
+
+.image images/pointers.gif 200 300
+
+- Values are passed by value, pointers make it possible to make changes inside functions/methods
+- No pointer arithmic
+
+.image images/value_reference.gif 200 350
+
+* Why another language?
+
+To solve software development problems inside Google.
+
+- Computing landscape changed since C++/Java/Python was created
+- Today:Multicore processors/Networked systems/Massive computation clusters/Web programming model
+- Server programs and teams working on them today are huge
+- Slow compile/build times (Inside joke at Google:"Go was built while waiting for a C++ compile to complete")
+
+.caption Source: [[https://talks.golang.org/2012/splash.article][Go at Google]] 
+
+.link https://hackernoon.com/golang-or-the-future-of-the-dev-984c2f145bbe#.i0u2873dg GoLang or the future of the dev
+
+
+
+* Goals
+
+  "The goals we have for Go today are the same as in 2007. 
+  We want to make programmers more effective at managing two kinds of scale: production scale, 
+  especially concurrent systems interacting with many other servers, exemplified today 
+  by cloud software; and development scale, especially large codebases worked on by many 
+  engineers coordinating only loosely, exemplified today by modern open-source development. - 
+
+  These kinds of scale show up at companies of all sizes."
+.caption Russ Cox : [[https://blog.golang.org/toward-go2][Towards Go 2 talk at Gophercon 2017]] 
+
+  "It is intended that programs written to the Go 1 specification will continue to compile and 
+  run correctly, unchanged, over the lifetime of that specification. At some indefinite point, 
+  a Go 2 specification may arise, but until that time, Go programs that work today should continue 
+  to work even as future "point" releases of Go 1 arise (Go 1.1, Go 1.2, etc.)."
+.caption Go 1.0 promise : [[https://golang.org/doc/go1compat][Go 1 and the Future of Go Programs]] 
+
+* Go Design principles
+.image images/goprinciples.png 270 480
+
+.caption Go Design principles : [[https://www.youtube.com/watch?v=ltqV6pDKZD8][Go Anti-Patterns - Edward Muller]] 
+
+
+* Why Go? (the name)
+
+.image images/mail.png 200 400
+
+- Humans: Go
+- Machines/SEO: Golang
+- Puns
+
+* Mascot
+
+.image images/gopheroriginal.png 200 200
+.caption _Gopher_ : [[http://www.reneefrench.com][Renée French]] 
+
+* Custom Gophers
+
+Does this look like me?
+
+.image images/gopher.png 300 300
+
+.caption Generated on  [[https://gopherize.me][Gopherize.me]] 
+.caption Artwork by [[https://twitter.com/ashleymcnamara][Ashley McNamara]]
+.caption Inspired by [[http://www.reneefrench.com][Renée French]] 
+
+* Release history
+
+Current Version 1.8.3 (and 1.9rc1)
+
+- Go 1.9 (coming August 2017)
+- Go 1.8 (February 2017) 
+- Go 1.7 (August 2016)
+- Go 1.6 (February 2016)
+- Go 1.5 (August 2015)
+- Go 1.4 (December 2014)
+- Go 1.3 (June 2014)
+- Go 1.2 (December 2013)
+- Go 1.1 (May 2013)
+- Go 1 (March 2012)
+
+* Release Candidate policy
+
+.image images/go1.9rc1.png 480 270 
+
+* Reactions to Go (the bad)
+
+- But it looks like ____?
+
+- But it doesn't look like ____?
+
+- Where's the *class* keyword?
+
+- What do you mean there's no *Exceptions*?
+
+- WHAT?! NO GENERICS !?? GET OFF MY LAWN!!
+
+- OH: It's like the designers of Go was living on an island the last few decades
+
+*Reiterate:* It's not meant to be a breakthrough research language but meant to be a pragmatic language.
+
+* Reactions to Go (the good)
+
+- "Go optimizes for future you, not current you"
+- "Coding happy path first causes us to miss edge cases. Go encourages us to write the sad part first"
+- "Go is in the unique position to keep it on the light side and still make it very useful"
+- "It [Go] gets out of the way of solving the problem, very minimal magic and great features.Not to mention all Go code looks identical and tests/docs/benchmarking etc all unified"
+
+* What is Go used for?
+
+  2,247 (63%) A runnable/interactive program (CLI)
+  2,174 (60%) API/RPC services (returning non-HTML)
+  1,886 (52%) Web services (returning HTML)
+  1,583 (44%) Agents and daemons (e.g, monitoring)
+  1,417 (39%) Libraries or Frameworks
+  1,209 (34%) Data processing (pipeline, aggregation)
+  1,120 (31%) Automation/scripts (e.g, deployment, configuration management)
+  107  (3%) I don't write in Go
+  137  (4%) Other
+  45  (1%) No response
+
+.caption "I write the following in Go" from [[https://blog.golang.org/survey2016-results][Go 2016 Survey results]] 
+
+* Public projects
+
+Caddy (web server)
+Hugo (static site generator) 
+Kubernetes 
+Docker 
+Etcd 
+Terraform/Nomad/Consul
+CockroachDB 
+Bolt 
+Prometheus 
+Gogs/Gitea
+NSQ
+NATS
+micro 
+go-kit
+
+* Go adoption
+
+- Hashicorp
+- CoreOS
+- Docker 
+- Google
+- Uber
+- Monzo (UK Bank)
+- Heroku
+- Sourcegraph
+- Dropbox
+.link https://github.com/golang/go/wiki/GoUsers Many more
+
+* What is Go not good for?
+
+- Low level systems programming
+- GUI apps (Desktop)
+- Really need generics
+
+* Standard library (https://golang.org/pkg/)
+
+- io (provides basic interfaces to I/O primitives)
+- os (provides a platform-independent interface to operating system functionality)
+- crypto (tls/x509/md5/aes/des/rsa/sha256 etc)
+- flag (command-line flag parsing)
+- net/http (HTTP/HTTP2 client and servers)
+- database/sql (generic interface around SQL (or SQL-like) databases)
+- encoding/json (implements encoding and decoding of JSON as defined in RFC 4627)
+- html/template (implements data-driven templates for generating HTML output safe against code injection)
+- strconv & strings (conversions and functions on UTF-8 strings)
+- sync (basic synchronization primitives such as mutual exclusion locks)
+- context (carries deadlines, cancelation signals, and other request-scoped values across API boundaries and between processes)
+
+* Go Tools
+
+- go (build/install/run)
+- godoc (documentation)
+- go fmt (standard Go code formatter)
+- go vet and go lint (Detects style mistakes in Go code)
+- goimports (Format code and fix your import statements)
+- go test (Testing and Benchmarking)
+- pprof (Profiling)
+- gops (List and diagnose Go processes currently running on your system)
+
+.link https://github.com/campoy/go-tooling-workshop Francesc Campoy's workshop
+.link https://dominik.honnef.co/posts/2014/12/go-tools/ 
+
+* Editors
+
+IDE's:
+
+- LiteIDE
+- IntelliJ (Jetbrains/Gogland)
+- Visual Studio 
+- Eclipse
+
+Text editors:
+
+- Vim
+- Emacs
+- Sublime Text
+- Visual Studio Code <--
+
+.link https://github.com/golang/go/wiki/IDEsAndTextEditorPlugins More
+
+* Example Go code
+
+.code hello.go 
+
+* Hello World - net/http style
+.code -edit code/nethttp/main.go
+
+.caption [[https://blog.gopheracademy.com/advent-2016/exposing-go-on-the-internet/][Exposing Go on the internet]] 
+
+* Demo - Car Service Booking service
+
+Application to record and view Car Service bookings
+
+- Accessed via web 
+- 3rd party integration via JSON API
+- Persistent data store
+- Notify sales department if new service booking has been made
+
+.link https://github.com/pieterlouw/carservice Demo Source Code
+
+
+* Where to "Go" from here? 
+
+.link https://tour.golang.org/ Tour of Go
+.link https://golang.org/dl/ Download Go
+.link https://golang.org/doc/code.html How to Write Go Code
+.link https://golang.org/doc/effective_go.html Effective Go
+.link https://github.com/golang/go/wiki Go Wiki
+.link https://golang.org/help/ Go Help
+
+* Where to from here? 
+
+- Blogs:
+
+.link https://dave.cheney.net/ Dave Cheney's blog
+.link https://rakyll.org/ Go:The unwritten parts - Jaana B. Dogan
+.link http://goinggo.net/ Going Go Programming - Bill Kennedy
+.link https://medium.com/@benbjohnson Ben Johnson (Medium)
+.link https://blog.gopheracademy.com/ GopherAcademy blog
+.link https://blog.golang.org/ Official Go blog
+
+- Videos:
+
+.link https://www.youtube.com/channel/UC_BzFbxG2za3bp5NRRRXJSw JustForFunc - Francesc Campoy
+.link https://www.goin5minutes.com/ Go in 5 minutes - Aaron Schlesinger 
+.link https://gophervids.appspot.com/ GopherVids 
+
+* Where to from here? 
+
+- Books:
+.link https://www.manning.com/books/go-in-action Go in Action - Bill Kennedy, Erik St.Martin, Brian Ketelsen
+.link https://www.packtpub.com/application-development/go-programming-blueprints-second-edition Go Programming Blueprints - Mat Ryer
+.link https://www.amazon.com/Programming-Language-Addison-Wesley-Professional-Computing/dp/0134190440/ The Go Programming Language - A.A Donovan, Brian W. Kernighan
+.link http://www.golangbootcamp.com/book Golang Bootcamp - Matt Aimonetti (free, online)
+.link http://www.golang-book.com/books/intro Introduction to Programming in Go - Caleb Doxsey (free, online)
+.link http://openmymind.net/The-Little-Go-Book/ The Little Go Book - Karl Seguin (free, online)
+.link https://www.gitbook.com/book/astaxie/build-web-application-with-golang/details Build web application with Golang - Astaxie (free, online)
+.link https://leanpub.com/antitextbookGo/ Webapps in Go (the anti textbook) - Suraj Patil (free, online)
+
+* Where to from here? 
+
+- Courses: 
+.link https://www.ardanlabs.com/go-training Ardan Labs (Corporate Go/Ultimate Go/Ultimate Web/Ultimate Data)
+.link https://www.udemy.com/learn-how-to-code/ Learn How To Code: Google's Go (golang) Programming Language - Todd Mcleod (Udemy)
+.link https://www.udemy.com/go-programming-language Web Development w/ Google’s Go - Todd Mcleod (Udemy)
+
+- Other:
+
+.link https://github.com/a8m/go-lang-cheat-sheet Go cheatsheet
+.link https://github.com/avelino/awesome-go A curated list of awesome Go frameworks, libraries and software
+.link https://twitter.com/curatedgo?lang=en Curated timeline of awesome Go articles and videos.
+
+* Community 
+
+.link https://golangbridge.org/ Go Bridge
+.link http://www.womenwhogo.org/ Woman Who Go
+.link https://forum.golangbridge.org/ Go Forum
+.link https://invite.slack.golangbridge.org/ Gopher Slack
+.link https://zatech.github.io/site/ ZA Tech Slack (#go Channel)
+.link https://changelog.com/gotime Go Time (podcast)
+
+* Community - Conferences
+
+.link http://gophercon.com/ GopherCon  (Denver, USA)
+.link http://2016.dotgo.eu/https://www.dotgo.eu/ dotGo (Paris,France)
+.link https://www.golanguk.com/ Golang UK (London, UK)
+
+.link http://gothamgo.com/ GothamGo  (New York, USA)
+.link http://www.capitalgolang.com/ Capital Go (Washington DC, USA)
+.link http://www.bagevent.com/event/357764 GopherCon China (Shanghai)
+.link http://www.gophercon.in/ GopherCon India (Pune, India)
+.link http://gophercon.sg/ GopherCon Singapore
+.link http://golab.io/ GoLab  (Florence, Italy)
+.link https://2017.gopherconbr.org/en GopherCon Brasil (Florianópolis, Brazil)
+  
+* Articles/Blogs that were useful to me
+
+.link http://marcio.io/2015/07/handling-1-million-requests-per-minute-with-golang/ Handling 1 Million Requests per Minute with Go - Marcio Castilho
+.link https://www.oreilly.com/learning/run-strikingly-fast-parallel-file-searches-in-go-with-sync-errgroup Run strikingly fast parallel file searches in Go with sync.ErrGroup - Brian Ketelsen
+.link https://peter.bourgon.org/go-in-production/ Go: Best Practices for Production Environments - Peter bourgon
+.link https://www.oreilly.com/ideas/how-to-ship-production-grade-go How to ship production-grade Go - Kavya Joshi
+.link https://www.youtube.com/watch?v=ynoY2xz-F8s Understanding nil - Francesc Campoy
+.link https://dave.cheney.net/2016/08/20/solid-go-design SOLID Go Design - Dave Cheney
+.link https://www.youtube.com/watch?v=5buaPyJ0XeQ Do not fear first class functions - Dave Cheney
+.link https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1 Standard Package Layout - Ben Johnson
+.link https://about.sourcegraph.com/blog/google-i-o-talk-building-sourcegraph-a-large-scale-code-search-cross-reference-engine-in-go/  Google I/O talk: Building Sourcegraph, a large-scale code search & cross-reference engine in Go - Beyang Liu
+
+* Why I like Go
+
+- No `class` keyword (no forced OO)
+- Functions (high order, first class and multiple returns)
+- Single binary (Cross and fast compile )
+- Get far without being an expert
+
+- Interfaces (abstractions are added later)
+- Multiple returns
+- defer
+- Concurrency is simple to implement
+
+* Cons
+
+- Idiomatic principles
+- Verbosity
+
+* Conclusions
+
+- Go is a modern, general purpose language made to be pragmatic and solve many problems we experience in languages of the past.
+- We were made to believe that software can only be great if it's complex.
+- Simplicity is possible through Go.
+
+
+
+
+
