@@ -1,0 +1,64 @@
+Going Serverless 
+Joburg Golang Group
+25 Mar 2019
+Tags: go,golang,serverless,gcp
+
+Pieter Louw
+Software Developer
+@pieterlouw
+
+* Agenda
+
+- Introduction 
+- What is Serverless?
+- Why?
+- Google Cloud Functions 
+- Demo's 
+- Questions/Discuss
+
+* What is Serverless ?
+
+.image images/jonsnow.gif 
+
+* Serverless
+
+.image images/how-it-works.svg
+
+- Architectural pattern
+- No provisioning of servers
+- No central arbiter
+- Stateless compute
+- Ephemeral containers
+- Event triggered (HTTP request/background)
+- Deployment tooling 
+
+* Go and Serverless
+
+.image images/google.jpg 186 512
+
+.caption _Artwork_ : [[https://twitter.com/ashleymcnamara][Ashley McNamara]]
+
+* Google Cloud Functions
+
+- Go 1.11 support
+- Tooling 
+- API 
+
+* Demo
+
+* Conclusion 
+
+
+
+- Serverless architecture is a great option if you don't want to deal with servers.
+- Benefits include reduced operational and startup costs and scales automatically.
+- Tradeoffs like stateless/startup latency/not transparent.
+- Go is a great language to implement serverless applications and more providers have supoort.
+
+* Pizza ! Pizza ! Pizza !
+
+.image images/pizza.gif
+
+
+
+
