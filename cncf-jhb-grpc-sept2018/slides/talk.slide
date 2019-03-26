@@ -1,0 +1,431 @@
+Messaging in a Cloud Native world using gRPC
+Johannesburg CNCF meetup 
+3 Sep 2018
+Tags: cncf,microservices,grpc 
+
+Pieter Louw
+@pieterlouw
+
+* Agenda
+
+- Discuss cloud native definitions
+- gRPC basics
+- gRPC beyond the basics
+- Demo 
+- Questions/Discuss
+
+: Welcome everybody
+: Thank VAT-IT 
+: Thank listeners for being here.
+: Ask crowd their expectations for the talk.
+
+* What is Cloud Native?
+
+.image images/meme.jpg
+
+: Ask crowd their definitions
+
+* Cloud Native definitions
+
+- "Cloud-native is an approach to building and running applications that exploits the advantages of the cloud computing delivery model. Cloud-native is about how applications are created and deployed, not where." - Pivotal
+- "Cloud Native is structuring teams, culture and technology to utilize automation and architectures to manage complexity and unlock velocity." - Heptio
+- "In general usage, “cloud-native” is an approach to building and running applications that exploits the advantages of the cloud computing delivery model. “Cloud-native” is about how applications are created and deployed, not where." - InfoWorld
+
+: Let's go through some definitions
+
+
+.link https://pivotal.io/cloud-native Pivotal 
+.link https://blog.heptio.com/cloud-native-part-1-definition-716ed30e9193 
+.link https://www.infoworld.com/article/3281046/cloud-computing/what-is-cloud-native-the-modern-way-to-develop-software.html InfoWorld 
+
+
+* Cloud Native definitions (CNCF)
+
+- "Cloud native technologies empower organizations to build and run scalable applications in modern, dynamic environments such as public, private, and hybrid clouds. Containers, service meshes, microservices, immutable infrastructure, and declarative APIs exemplify this approach." - CNCF
+
+.link https://www.cncf.io/about/faq/# CNCF
+
+: As this is a CNCF meetup, we need to honour their definition.
+
+
+* Cloud Native
+
+- *You don’t have to run in the cloud to be “Cloud Native”*
+
+- It's a modern way to architect your system to enable velocity through the use of DevOps, Containers, Continous Delivery and *Microservices*.
+
+: The point, ironically, is that you don't have to run in the cloud to be cloud native.
+: *Talk about how it is a modern way to architect your systems*
+: Today I want to focus on the Microservices part of a system Cloud Native.
+
+* Microservices
+
+- Distributed
+- Inter process communication
+
+: In contrast to a monolithic application where different modules talk to each other via method/function calls, 
+: microservices are small independant services that make up a big system but they are distributed 
+: and each service run in their own process space.
+: The way these services talk to each other is normally via network calls.
+
+* Enter.... gRPC
+
+.image images/grpc.png
+
+: gRPC is a high performance RPC framework developed to enable this type of communication between services.
+: Framework is an interesting word.
+: Open Source & It's based on similar framework inside Google that they have been using the last decade (Stubby)
+: It's created for inter server services, but also for the last mile of computing (mobile, web and IOT).
+
+* RPC
+
+- Remote Procedure Call (RPC) is an architectural pattern where you call a method in another address space, usually over a network, but it looks like your calling a method inside your local address space.
+
+.image images/rpc-flow.png
+
+: *Discuss the arch in picture* (CORBA/RMI/DCOM)
+: IDL - Like many RPC systems, gRPC is based around the idea of defining a service, specifying the methods that can be called remotely with their parameters and return types.
+: Tool to generate code, implement server handlers & create client that call the stubs
+
+* gRPC - Create an interface definition file (.proto)
+
+    syntax = "proto3";
+
+    package kv;
+
+    service KV {
+        rpc Get(GetRequest) returns (GetResponse);
+        rpc Set(SetRequest) returns (SetResponse);
+    }
+
+    message GetRequest {
+        string key = 1;
+    }
+    message GetResponse {
+        string value = 1;
+    }
+    message SetRequest {
+        string key = 1;
+        string value = 2;
+    }
+    message SetResponse {
+        bool ok = 1;
+    }
+
+: Create service API methods and messages
+: Generated code create interfaces and classes/structures depending on language that map to definition
+: IDL here is Protobuf version 3 (Others like Flatbuffers)
+
+
+* gRPC - Generate code from IDL file
+
+    //Go 
+    protoc *.proto --go_out=plugins=grpc:.
+
+View server interface in generate code:
+
+    // Server API for KV service (from generated code)
+    type KVServer interface {
+        Get(context.Context, *GetRequest) (*GetResponse, error)
+        Set(context.Context, *SetRequest) (*SetResponse, error)
+    }
+    
+: Run tool to generate code (protoc in  this case) and specify for which languages
+: to generate code for.
+: Here's and example of the API interface created from our .proto file.
+
+
+* gRPC - Implement handlers for generated code
+
+    type KV struct {
+        store map[string]string
+    }
+
+    func (k *KV) Get(ctx context.Context, in *kv.GetRequest) (*kv.GetResponse, error) {
+        resp := new(kv.GetResponse)
+        if val, ok := k.store[in.Key]; ok {
+            resp.Value = val
+            return resp, nil
+        }
+
+        return nil, status.Errorf(codes.NotFound, "key '%s' not set", in.Key)
+    }
+
+    func (k *KV) Set(ctx context.Context, in *kv.SetRequest) (*kv.SetResponse, error) {
+        k.store[in.Key] = in.Value
+
+        return &kv.SetResponse{true}, nil
+    }
+ 
+: On the server side, the server implements the methods declared by the service interface that the 
+: gRPC server will use to handle client requests.
+: Basically, this is the code that gets called when a client call the method from other process
+
+* gRPC - Register server implementation
+
+    func main() {
+        port := flag.Int("port", 8081, "grpc port")
+
+        flag.Parse()
+
+        lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+        if err != nil {
+            log.Fatalf("failed to listen: %v", err)
+        }
+        gs := grpc.NewServer(/* grpc server options here */)
+        kv.RegisterKVServer(gs, NewKVStore())
+
+        log.Printf("starting grpc on :%d\n", *port)
+
+        gs.Serve(lis)
+    }
+
+: When creating a gRPC server instance you need to register your implementation.
+: Even the registration code (lots of boilerplate included) is generated.
+: The gRPC infrastructure decodes incoming requests, executes service methods, and encodes service responses.
+
+* gRPC - Create client and use stubs
+
+    grpcConn, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
+    //handle err
+
+    kvClient := proto.NewKVClient(grpcConn)
+
+    ctx := context.Background()
+
+    setRsp, err := kvClient.Set(ctx, &proto.SetRequest{
+        Key : "user1",
+        Value : "Smokey Smokerson",
+    })
+    //handle err
+    fmt.Println("response:", setRsp.Ok)
+
+    getRsp, err := kvClient.Get(ctx, &proto.GetRequest{
+        Key : "user1",
+    })
+    //handle err
+    fmt.Println("value:", getRsp.Value) // prints "Smokey Smokerson"
+
+: On the client side, the client has a local object known as stub (for some languages, the preferred term is client) that implements the same methods as the service. 
+: The client can then just call those methods on the local object, wrapping the parameters for the call in the appropriate protocol buffer message type - gRPC looks after sending the request(s) to the server and returning the server’s protocol buffer response(s).
+: In gRPC a client application can directly call methods on a server application on a different machine as if it was a local object, making it easier for you to create distributed applications and services.
+
+
+* gPRC framework provides more
+
+What if your requests span 2, 5 or even 10 services?
+- TCP/REST/SOAP is fine for request/response
+
+gRPC adds:
+- Different method types
+- Deadlines/Timeouts
+- RPC termination
+- Cancelling RPC's
+- Metadata
+- Channels
+
+- With protobuf, stronger API contracts
+
+: As I've said before, gRPC is a RPC framework to not only send messages, but be pluggable
+: and give functionality that is needed in distributed architectures. 
+
+* gRPC - Different method types
+
+- RPC lifecycle: 
+
+Once the client calls the method on the stub/client object, the server is notified that the RPC has been invoked with the client’s metadata for this call, the method name, and the specified deadline if applicable.
+The server can then either send back its own initial metadata (which must be sent before any response) straight away, or wait for the client’s request message - which happens first is application-specific.
+Once the server has the client’s request message, it does whatever work is necessary to create and populate its response. The response is then returned (if successful) to the client together with status details (status code and optional status message) and optional trailing metadata.
+If the status is OK, the client then gets the response, which completes the call on the client side.
+
+
+* gRPC - Different method types - Unary
+
+- Unary (request/response)
+    rpc Get(GetRequest) returns (GetResponse);
+
+: Unary RPCs is where the client sends a single request to the server and gets a single response back, just like a normal function call.
+
+
+* gRPC - Different method types - Client Streaming
+
+- Client Streaming
+
+    rpc Batch(stream Transaction) returns (BatchResponse);
+
+: Client streaming RPCs where the client writes a sequence of messages and sends them to the server over a provided stream. Once the client has finished writing the messages, 
+: it waits for the server to read them and return its response.
+: Similar to unary, only client send a stream of messages instead of just one.
+
+* gRPC - Different method types - Server Streaming
+
+- Server Streaming 
+
+    rpc ListTransactions(ListRequest) returns (stream Transaction)
+
+: Server streaming RPCs where the client sends a request to the server and gets a stream.
+: The client reads from the returned stream until there are no more messages.
+: A server-streaming RPC is similar to our simple example, except the server sends back a stream of responses 
+: after getting the client’s request message. 
+
+* gRPC - Different method types - Server Streaming
+
+- Bidirectional Streaming
+
+    rpc Chat(stream Message) returns (stream Message)
+
+: Bidirectional streaming RPCs where both sides send a sequence of messages using a read-write stream. 
+: The two streams operate independently, so clients and servers can read and write in whatever order they like.
+: Server and client to be able to communicate to the other side independently in a full duplex fashion.
+
+* Deadlines/Timeouts
+
+- Client side specificy deadline/timeout.
+- Server side can query deadline/timeout.
+
+Language dependant:
+- Deadline (a fixed point in time)
+- Timeouts (durations of time)
+
+: gRPC allows clients to specify how long they are willing to wait for an RPC to complete before the RPC is 
+: terminated with a gRPC error DEADLINE_EXCEEDED. On the server side, the server can query to see if a particular 
+: RPC has timed out, or how much time is left to complete the RPC.
+
+* Cancelling RPCs
+
+Either the client or the server can cancel an RPC at any time. 
+
+: A cancellation terminates the RPC immediately so that no further work is done. 
+: It is not an “undo”: changes made before the cancellation will not be rolled back.
+
+* Metadata
+
+- Metadata is information about a particular RPC call. (i.e HTTP headers)
+
+: Info about a particular RPC call (such as authentication details) in the form of a list of key-value pairs.
+: Metadata is opaque to gRPC itself - it lets the client provide information associated with the call to the server and vice versa.
+
+* Channels
+
+Channels can be seen as an abstraction about the underlying connection between client and server.
+
+Channel properties/options to enable security (tls), compression etc.
+
+: A gRPC channel provides a connection to a gRPC server on a specified host and port and is used when 
+: creating a client stub (or just “client” in some languages). Clients can specify channel arguments to modify gRPC’s 
+: default behaviour, such as switching on and off message compression. A channel has state, including connected and idle.
+
+* Interceptors
+
+-  Middleware (logging/auth/metrics)
+
+: gRPC API have interceptors which is basically middleware.
+: Unary and Streaming calls
+: Middleware seperate concerns away from core business logic.
+
+* Stronger API contracts
+
+- Protocol Buffers
+- Binary == smaller and faster
+- Type safe
+- Support 11 languages!
+- C++, Java, Python, Go, Ruby, C#, Node.js, Android Java, Objective-C, PHP, Dart (beta)
+
+: Stronger API contracts with Protocol Buffers
+: Binary payloads
+: Backward compatible API
+: Multi language
+
+* Load Balancing and Resolving
+
+Load balancing is used for distributing the load from clients optimally across available servers
+- Where? Proxy or client side?
+
+https://grpc.io/blog/loadbalancing
+https://github.com/grpc/grpc/blob/master/doc/load-balancing.md
+
+: Proxy, untrusted or simple clients, proxy talks to backends to determine distribution., extra hop
+: Proxy options (L7 app or L4 transport)
+: Client side - thick clients, keep health in client.
+: Client options (thick clients or lookaside LB(like Consul, client connect directly to service selected))
+
+* Web/Browser clients?
+
+- grpc-Web
+    - Google
+    - Improbable
+    - Caddy web server (uses Improbable's Go grpcwebproxy)
+
+- gRPC to JSON
+    - grpc-gateway 
+    - Google Cloud Endpoints
+
+- Webassembly! 
+
+Each implementation needs a proxy on the server side.
+
+: Gateway generates proxy for you
+: grpc-Web Google uses Envoy proxy
+: Improbable created their own proxy in Go
+: Cloud Endpoints uses Extensible Service Proxy (ESP)
+
+* gRPC-Web client example
+
+    const {EchoRequest, EchoResponse} = require('./echo_pb.js'));
+    const {EchoServiceClient} = require('./echo_grpc_web_pb.js');
+
+    var echoService = new EchoServiceClient('http://localhost:8080');
+
+    var request = new EchoRequest();
+    request.setMessage('Hello World!');
+
+    echoService.echo(request, {}, function(err, response) {
+    // ...
+    });
+
+: Concepts stay the same as with normal gRPC.
+: New plugins need to be installed for js protoc output
+: Client talk to server via proxy 
+
+* gRPC-gateway example
+
+    syntax = "proto3";
+    package example;
+    
+    import "google/api/annotations.proto";
+    
+    message StringMessage {
+        string value = 1;
+    }
+    
+    service YourService {
+      rpc Echo(StringMessage) returns (StringMessage) {
+        option (google.api.http) = {
+          post: "/v1/example/echo"
+          body: "*"
+        };
+      }
+    }
+
+: Add http annonations 
+
+- Comparison to traditional transport mechanism
+
+- Binary protocol (HTTP/2)
+- Multiplexing many requests on one connection (HTTP/2)
+- Header compression (HTTP/2)
+- Strongly typed service and message definition (Protobuf)
+- Idiomatic client/server library implementations in many languages
+
+* Demo
+
+Service
+Add security (tls)
+Add logging Interceptors (fluentd)
+Add metrics and tracing (OpenCensus) and export to Prometheus and Jaeger
+Add grpc-Web client with Envoy  or use Envoy to bridge/load balance
+
+
+* End
+
+https://goo.gl/89QiWt
