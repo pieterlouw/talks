@@ -1,0 +1,13 @@
+POST /AddExpense HTTP/1.1
+Host: us-central1-talks-235110.cloudfunctions.net
+Content-Type: application/json
+cache-control: no-cache
+Postman-Token: f4b072b7-6105-4d7f-b217-8cb791d4e34d
+{
+	"timestamp" : "2019-03-25 18:00:00",
+	"total_amount" : 40000,
+	"location" : "King's Landing",
+	"tags" : ["groceries"],
+	"payment_method" : "card",
+	"comments" : "Mid-week groceries"
+}
